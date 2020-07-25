@@ -1,5 +1,5 @@
 defc TAR__crt_org_code              = 0
-defc TAR__crt_org_data              = 0x8000
+defc TAR__crt_org_data              = 0x4000
 defc TAR__crt_org_bss               = -1
 
 defc TAR__crt_model                 = 2

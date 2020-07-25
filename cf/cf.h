@@ -68,3 +68,5 @@ void cf_read(uint32_t sector, uint8_t* data);
 void cf_write(uint32_t sector, uint8_t* data);
 void cf_dump_sector(uint8_t* data);
 void cf_set_sector(uint32_t sector);
+int cf_wait_for_ready();
+void busy_sleep(uint32_t time);
