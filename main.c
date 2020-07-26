@@ -32,7 +32,7 @@ void die (FRESULT rc)
 	print_memory(&rc, sizeof(rc));
 	for (;;) ;
 }
-void (*jump)(void) = 0x8000;
+void (*jump)(void) = 0x5000;
 
 uint8_t linebuf[64];
 uint8_t readline()
@@ -121,7 +121,7 @@ enterf:
 		goto enterf;
 	}
 
-	rc = pf_read((uint8_t *) 0x8000, 0xFFFF, &br);
+	rc = pf_read((uint8_t *) 0x5000, 0xFFFF, &br);
 
 	putstring_uart("Will jump...\n");
 	jump();

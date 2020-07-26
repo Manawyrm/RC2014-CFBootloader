@@ -13,6 +13,7 @@ int cf_wait_for_ready()
 	{
 		state = z80_inp(CF_STATUS);
 		timeout++;
+		z80_delay_ms(1);
 		if (timeout == 60000)
 		{
 			return -1;
@@ -22,6 +23,27 @@ int cf_wait_for_ready()
 
 	return 0;
 }
+
+int cf_wait_for_not_busy_and_ready()
+{
+	uint8_t state;
+
+	state = 0xFF;
+	while (bitRead(state, 7) || !bitRead(state, 6)) // wait for !busy 0x80 and ready 0x40
+	{
+		state = z80_inp(CF_STATUS);
+		timeout++;
+		z80_delay_ms(1);
+		if (timeout == 60000)
+		{
+			return -1;
+		}
+	}
+	timeout = 0;
+
+	return 0;
+}
+
 
 void busy_sleep(uint32_t time)
 {
@@ -33,22 +55,28 @@ void busy_sleep(uint32_t time)
 
 void cf_init()
 {
-	busy_sleep(5000);
-	if (cf_wait_for_ready())
+	//busy_sleep(1000);
+	if (cf_wait_for_not_busy_and_ready())
 	{
 		putstring_uart("cf_init() timeout\n");
 	}
-	busy_sleep(200);
+	//busy_sleep(20);
 
 	z80_outp(CF_FEATURE, CF_FEATURE_8BIT_MODE);
-	busy_sleep(200);
+	//busy_sleep(20);
 
 	z80_outp(CF_COMMAND, IDE_CMD_SETFEATURES);
-	busy_sleep(200);
+	//busy_sleep(20);
+
+	if (cf_wait_for_not_busy_and_ready())
+	{
+		putstring_uart("cf_init() timeout\n");
+	}
+
 
 	z80_outp(CF_FEATURE, CF_FEATURE_DISABLE_WRITE_CACHING);
 
-	busy_sleep(200);
+	//busy_sleep(20);
 
 	z80_outp(CF_COMMAND, IDE_CMD_SETFEATURES);
 }
@@ -58,23 +86,14 @@ void cf_read(uint32_t sector, uint8_t* data)
 	int i;
 	uint8_t state;
 
-	state = 0xFF;
-	while (bitRead(state, 7) || !bitRead(state, 6)) // wait for !busy 0x80 and ready 0x40
+	if (cf_wait_for_not_busy_and_ready())
 	{
-		state = z80_inp(CF_STATUS);
-		timeout++;
-		if (timeout == 60000)
-		{
-			putstring_uart("cf_read() !busy/ready timeout\n");
-		}
+		putstring_uart("cf_read() !busy/ready timeout\n");
 	}
-	timeout = 0;
-	busy_sleep(200);
 	
 	z80_outp(CF_NUMSECT, 1); // read only a single sector at a time
 	cf_set_sector(sector);
 
-	busy_sleep(200);
 
 	z80_outp(CF_COMMAND, IDE_CMD_READ);
 
@@ -90,7 +109,6 @@ void cf_read(uint32_t sector, uint8_t* data)
 	}
 	timeout = 0;
 	
-	busy_sleep(200);
 
 	for (i = 0; i < SECTOR_SIZE; i++)
 	{
@@ -103,17 +121,14 @@ void cf_write(uint32_t sector, uint8_t* data)
 	int i;
 	uint8_t state;
 
-	state = 0xFF;
-	while (bitRead(state, 7) || !bitRead(state, 6)) // wait for !busy 0x80 and ready 0x40
+	if (cf_wait_for_not_busy_and_ready())
 	{
-		state = z80_inp(CF_STATUS);
+		putstring_uart("cf_write()-1 !busy/ready timeout\n");
 	}
-	busy_sleep(200);
 	
 	z80_outp(CF_NUMSECT, 1); // read only a single sector at a time
 	cf_set_sector(sector);
 
-	busy_sleep(200);
 	z80_outp(CF_COMMAND, IDE_CMD_WRITE);
 
 	state = 0xFF;
@@ -121,18 +136,15 @@ void cf_write(uint32_t sector, uint8_t* data)
 	{
 		state = z80_inp(CF_STATUS);
 	}
-
-	busy_sleep(200);
 	
 	for (i = 0; i < SECTOR_SIZE; i++)
 	{
 		z80_outp(CF_DATA, data[i]);
 	}
 
-	state = 0xFF;
-	while (bitRead(state, 7) || !bitRead(state, 6)) // wait for !busy 0x80 and ready 0x40
+	if (cf_wait_for_not_busy_and_ready())
 	{
-		state = z80_inp(CF_STATUS);
+		putstring_uart("cf_write()-2 !busy/ready timeout\n");
 	}
 }
 

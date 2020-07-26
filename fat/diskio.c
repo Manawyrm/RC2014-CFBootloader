@@ -3,7 +3,7 @@
 #include "../uart/uart.h"
 #include <string.h>
 
-#define DEBUG 1
+//#define DEBUG 1
 
 DSTATUS disk_initialize (void)
 {
