@@ -83,6 +83,11 @@ void cf_init()
 
 void cf_read(uint32_t sector, uint8_t* data)
 {
+	cf_read_chunk(sector, data, 0, SECTOR_SIZE);
+}
+
+void cf_read_chunk(uint32_t sector, uint8_t* data, uint16_t offset, uint16_t length)
+{
 	int i;
 	uint8_t state;
 
@@ -108,11 +113,17 @@ void cf_read(uint32_t sector, uint8_t* data)
 		}
 	}
 	timeout = 0;
-	
 
 	for (i = 0; i < SECTOR_SIZE; i++)
 	{
-		data[i] = z80_inp(CF_DATA);
+		if (i >= offset && i < offset + length)
+		{
+			*data++ = z80_inp(CF_DATA);
+		} 
+		else
+		{
+			z80_inp(CF_DATA);
+		}
 	}
 }
 

@@ -11,8 +11,6 @@ DSTATUS disk_initialize (void)
     return RES_OK;
 }
 
-uint8_t cf_sector_read[512];
-uint8_t cf_sector_write[512];
 
 void print_memory(const void *addr, uint16_t size);
 
@@ -46,20 +44,18 @@ DRESULT disk_readp (BYTE* buff, DWORD sector, WORD offset, WORD count)
         putstring_uart("disk_readp: ");
         putstring_uart("buff_a:");
         print_address(buff);
-        putstring_uart(" cf_sector_read_a:");
-        print_address(cf_sector_read);
         putstring_uart("\n");
     #endif
 
-    cf_read(sector, cf_sector_read);
-    memcpy(buff, cf_sector_read + offset, count);
+    cf_read_chunk(sector, buff, offset, count);
     return RES_OK;
 }
 
+//uint8_t cf_sector_write[512];
 uint32_t currentSector; 
 DRESULT disk_writep (const BYTE* buff, DWORD sc)
 {
-    if (buff)
+   /* if (buff)
     {
         memcpy(cf_sector_write, buff, sc);
     }
@@ -77,7 +73,7 @@ DRESULT disk_writep (const BYTE* buff, DWORD sc)
             cf_write(currentSector, cf_sector_write);
         }
         
-    }
+    }*/
     
     return RES_OK;
 }

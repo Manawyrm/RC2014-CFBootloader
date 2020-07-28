@@ -65,6 +65,7 @@
 
 void cf_init();
 void cf_read(uint32_t sector, uint8_t* data);
+void cf_read_chunk(uint32_t sector, uint8_t* data, uint16_t offset, uint16_t length);
 void cf_write(uint32_t sector, uint8_t* data);
 void cf_dump_sector(uint8_t* data);
 void cf_set_sector(uint32_t sector);
