@@ -9,10 +9,12 @@ extern _uart_read
 extern _putchar_uart
 extern _pf_open
 extern _pf_read
-extern _pf_write
+extern _dummy
 extern _pf_opendir
 extern _pf_readdir
 extern _cf_write
+extern _readline
+extern _fat_load_and_execute
 
 PUBLIC _romfunctions
 _romfunctions:
@@ -24,9 +26,11 @@ _romfunctions:
 	defw _putchar_uart
 	defw _pf_open
 	defw _pf_read
-	defw _pf_write
+	defw _dummy
 	defw _pf_opendir
 	defw _pf_readdir
 	defw _cf_write
-	defs 40
+	defw _readline
+	defw _fat_load_and_execute
+	defs 36
 

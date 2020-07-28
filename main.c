@@ -2,6 +2,7 @@
 #include "cf/cf.h"
 #include "fat/pff.h"
 #include "uart/uart.h"
+
 void print_memory(const void *addr, uint16_t size)
 {
     uint16_t printed = 0;
@@ -24,23 +25,19 @@ void print_memory(const void *addr, uint16_t size)
     }
 }
 
-
 void die (FRESULT rc)
 {
-	//printf("Failed with rc=%u.\n", rc);
 	putstring_uart("fat error :( \n");
 	print_memory(&rc, sizeof(rc));
 	for (;;) ;
 }
-void (*jump)(void) = 0x5000;
 
-uint8_t linebuf[64];
-uint8_t readline()
+uint8_t readline(uint8_t* buffer, uint16_t max_length)
 {
 	uint8_t input = 0xFF; 
 	uint8_t i = 0;
 	// loop until we get a return or the buffer is full
-	while (input != '\r' && i != 64) 
+	while (input != '\r' && i != max_length) 
 	{
 		// wait for character
 		while (!uart_available()) {}
@@ -62,17 +59,40 @@ uint8_t readline()
 
 			// don't put newlines into the buffer
 			if (!(input == '\r' || input == '\n'))
-				linebuf[i++] = input;
+				buffer[i++] = input;
 		}
 
 		
 	}
-	linebuf[i] = 0x00;
+	buffer[i] = 0x00;
 
-	//print_memory(linebuf, 64);
 	return i;
 }
 
+FRESULT fat_load_and_execute(uint8_t* filename, void* load_address)
+{
+	FRESULT rc;
+	UINT br; 
+	rc = pf_open(filename);
+	if (rc)
+	{
+		return rc;
+	}
+
+	rc = pf_read((uint8_t *) load_address, 0xFFFF, &br);
+
+	void (*jump)(void) = load_address;
+	jump();
+
+	return 0;
+}
+
+void dummy()
+{
+	
+}
+
+uint8_t linebuf[64];
 
 void main()
 {
@@ -82,8 +102,6 @@ void main()
 	FATFS fatfs;
 	DIR dir;
 	FILINFO fno;
-	UINT bw, br, i;
-	BYTE buff[64];
 
 	putstring_uart("cfbootloader starting.\n");
 
@@ -105,7 +123,7 @@ void main()
 
 enterf:
 	putstring_uart("Please enter filename to load: \n");
-	while (!readline())
+	while (!readline(linebuf, 64))
 	{
 		putstring_uart("Please enter filename to load: \n");
 	}
@@ -114,18 +132,11 @@ enterf:
 	putstring_uart(linebuf);
 	putstring_uart(").\n");
 
-	rc = pf_open(linebuf);
-	if (rc)
+	if (fat_load_and_execute(linebuf, (void*) 0x5000))
 	{
 		putstring_uart("File not found!\n");
 		goto enterf;
 	}
-
-	rc = pf_read((uint8_t *) 0x5000, 0xFFFF, &br);
-
-	putstring_uart("Will jump...\n");
-	jump();
-
 
 	while(1)
 	{

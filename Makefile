@@ -2,7 +2,7 @@ SRCS=$(wildcard */*.c) $(wildcard *.c) romfunctions.asm
 CC = zcc
 #CFLAGS = +rc2014-manawyrm -subtype=none -vn -SO3 -O3  --opt-code-size -clib=sdcc_iy -pragma-define:__CRTCFG=-1
 #CFLAGS = +rc2014 -subtype=basic -v -m -SOfast --c-code-in-asm  -clib=sdcc_ix
-CFLAGS = +rc2014 -subtype=acia -v -m -SOs --c-code-in-asm  -clib=sdcc_ix -pragma-define:__CRTCFG=-1
+CFLAGS = +rc2014 -subtype=acia -v -m -SO3 -O3 --c-code-in-asm  -clib=sdcc_ix -pragma-define:__CRTCFG=-1
 
 #  --max-allocs-per-node200000
 
