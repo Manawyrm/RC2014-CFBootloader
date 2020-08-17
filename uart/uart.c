@@ -6,7 +6,7 @@ __sfr __at 0x81 ACIA_DATA;
 
 #define UART_RX_SIZE 128
 uint8_t uart_rx_buffer[UART_RX_SIZE];
-uint8_t rxhead, rxtail;
+volatile uint8_t rxhead, rxtail;
 
 char uart_register_read (void)
 {
@@ -23,9 +23,9 @@ void z80_rst_38h(void) __critical __interrupt(0)
   return;
 }
 
-int uart_available()
-{             
-    return (rxhead != rxtail);
+uint8_t uart_available()
+{
+    return rxhead ^ rxtail;
 }
 
 uint8_t uart_read()
