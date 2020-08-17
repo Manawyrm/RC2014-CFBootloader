@@ -8,24 +8,24 @@ __sfr __at 0x81 ACIA_DATA;
 uint8_t uart_rx_buffer[UART_RX_SIZE];
 uint8_t rxhead, rxtail;
 
+char uart_register_read (void)
+{
+  while ((ACIA_CONTROL & 1) == 0) {};
+  return ACIA_DATA;
+}
+
 void z80_rst_38h(void) __critical __interrupt(0)
 {
-    uart_rx_buffer[rxtail] = uart_register_read();
-    rxtail++;
-    rxtail &= 127;
-	
-	return;
+  uart_rx_buffer[rxtail] = uart_register_read();
+  rxtail++;
+  rxtail &= 127;
+
+  return;
 }
 
 int uart_available()
-{
-    if (rxhead == rxtail)
-        return 0;
-     
-    if (uart_rx_buffer[rxhead] == 0 && ((rxhead+1) & 127) == rxtail) 
-        return 0;
-        
-    return 1;
+{             
+    return (rxhead != rxtail);
 }
 
 uint8_t uart_read()
@@ -39,22 +39,15 @@ uint8_t uart_read()
    return key;
 }
 
-char uart_rx_filled()
+inline char uart_rx_filled()
 {
     return (ACIA_CONTROL & 1);
 }
 
-char uart_register_read (void)
-{
-    // write to registers to tx the data. TX buffering, etc
-    while ((ACIA_CONTROL & 1) == 0) {};
-	return ACIA_DATA;
-}
 
 void uart_init(void)
 {
-	ACIA_CONTROL = 0x96; // interrupt 
-    //ACIA_CONTROL = 0x16;  // no interrupts
+  ACIA_CONTROL = 0x96; // interrupt 
 }
 
 

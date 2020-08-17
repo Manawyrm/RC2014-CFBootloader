@@ -69,6 +69,19 @@ uint8_t readline(uint8_t* buffer, uint16_t max_length)
 	return i;
 }
 
+void to_upper(uint8_t* buffer, uint16_t length)
+{
+	for (int i = 0; i < length; ++i)
+	{
+		uint8_t c = buffer[i];
+
+		if (c >= 'a' && c <= 'z')
+		{
+			buffer[i] = c - 0x20;
+		}
+	}
+}
+
 FRESULT fat_load_and_execute(uint8_t* filename, void* load_address)
 {
 	FRESULT rc;
